@@ -104,32 +104,22 @@ func main() {
 			gamelogic.PrintClientHelp()
 		case "spam":
 			if len(words) < 2 {
-				fmt.Println("Usage: spam <number>")
+				fmt.Println("usage: spam <n>")
 				continue
 			}
 			n, err := strconv.Atoi(words[1])
 			if err != nil {
-				fmt.Println("Please provide a valid number")
+				fmt.Printf("error: %s is not a valid number\n", words[1])
 				continue
 			}
-			fmt.Printf("Spamming %d malicious logs...\n", n)
 			for i := 0; i < n; i++ {
-				maliciousMsg := gamelogic.GetMaliciousLog()
-				err := pubsub.PublishGob(
-					publishCh,
-					routing.ExchangePerilTopic,
-					routing.GameLogSlug+"."+gs.GetUsername(),
-					routing.GameLog{
-						Username:    gs.GetUsername(),
-						CurrentTime: time.Now(),
-						Message:     maliciousMsg,
-					},
-				)
+				msg := gamelogic.GetMaliciousLog()
+				err = publishGameLog(publishCh, username, msg)
 				if err != nil {
-					fmt.Printf("error publishing log %d: %s\n", i+1, err)
+					fmt.Printf("error publishing malicious log: %s\n", err)
 				}
 			}
-			fmt.Printf("Finished spamming %d logs!\n", n)
+			fmt.Printf("Published %v malicious logs\n", n)
 		case "quit":
 			gamelogic.PrintQuit()
 			return
